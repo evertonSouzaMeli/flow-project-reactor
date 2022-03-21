@@ -3,6 +3,8 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.function.Consumer;
+
 /*
 * Reative Streams
 * 1. Assincrono
@@ -38,5 +40,33 @@ public class MonoTest {
                 .expectSubscription()
                 .expectNext(hello)
                 .verifyComplete();
+    }
+
+    @Test
+    public void monoSubscriberConsumer(){
+        var hello = "Hello World";
+        var mono = Mono.just(hello).log();
+
+        mono.subscribe(str -> log.info("Mono - {}", str));
+
+        StepVerifier.create(mono)
+                .expectSubscription()
+                .expectNext(hello)
+                .verifyComplete();
+    }
+
+    @Test
+    public void monoSubscriberConsumerError(){
+        var hello = "Hello World";
+        var mono = Mono.just(hello).map(str -> {
+            throw new RuntimeException("Something bad has happened");
+        });
+
+        mono.subscribe(str -> log.info("Mono - {} ", str), exception -> log.error(exception.getMessage()));
+        mono.subscribe(str -> log.info("Mono - {} ", str), Throwable::printStackTrace);
+
+        StepVerifier.create(mono)
+                .expectError(RuntimeException.class)
+                .verify();
     }
 }
