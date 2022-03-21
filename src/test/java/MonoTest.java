@@ -106,4 +106,23 @@ public class MonoTest {
                 .expectNext(hello.toUpperCase())
                 .verifyComplete();
     }
+
+    @Test
+    public void monoDoOnMethods(){
+        var hello = "Hello World";
+        var mono = Mono.just(hello)
+                .log()
+                .map(str -> str.toUpperCase())
+                .doOnSubscribe(subscription -> log.info("Subscribed"))
+                .doOnRequest(value -> log.info("Request Receveid, start doing something..."))
+                .doOnNext(str -> log.info("Value is here. Executing doOnNext {}", str))
+                .map(str -> Mono.empty())
+                .doOnNext(str -> log.info("Value is here. Executing doOnNext {}", str))
+                .doOnSuccess(str ->  log.info("doOnSuccess executed", str));
+
+
+        mono.subscribe(str -> log.info("Mono - {}", str),
+                Throwable::printStackTrace,
+                () -> log.info("Finished"));
+    }
 }
