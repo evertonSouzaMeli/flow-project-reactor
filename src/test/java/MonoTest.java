@@ -69,4 +69,41 @@ public class MonoTest {
                 .expectError(RuntimeException.class)
                 .verify();
     }
+
+    @Test
+    public void monoSubscriberConsumerRunnable(){
+        var hello = "Hello World";
+        var mono = Mono.just(hello)
+                .log()
+                .map(str -> str.toUpperCase());
+
+
+        mono.subscribe(str -> log.info("Mono - {}", str),
+                Throwable::printStackTrace,
+                () -> log.info("Finished"));
+
+        StepVerifier.create(mono)
+                .expectSubscription()
+                .expectNext(hello.toUpperCase())
+                .verifyComplete();
+    }
+
+    @Test
+    public void monoSubscriberConsumerSubscription(){
+        var hello = "Hello World";
+        var mono = Mono.just(hello)
+                .log()
+                .map(str -> str.toUpperCase());
+
+
+        mono.subscribe(str -> log.info("Mono - {}", str),
+                Throwable::printStackTrace,
+                () -> log.info("Finished"),
+                subscription -> subscription.cancel());
+
+        StepVerifier.create(mono)
+                .expectSubscription()
+                .expectNext(hello.toUpperCase())
+                .verifyComplete();
+    }
 }
